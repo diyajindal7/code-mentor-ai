@@ -31,6 +31,29 @@ async function getAllFiles(dirPath) {
   return files;
 }
 
+
+
+async function readRepositoryFiles(repoPath) {
+  const files = await getAllFiles(repoPath);
+
+  const fileContents = [];
+
+  for (const file of files) {
+    try {
+      const content = await fs.readFile(file, "utf-8");
+
+      fileContents.push({
+        path: file,
+        content,
+      });
+    } catch (error) {
+      console.log(`Skipping file: ${file}`);
+    }
+  }
+
+  return fileContents;
+}
+
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -100,6 +123,35 @@ app.post("/scan-repo", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to scan repository",
+    });
+  }
+});
+
+
+
+app.post("/read-repo", async (req, res) => {
+  try {
+    const { repoName } = req.body;
+
+    const repoPath = path.join(
+      __dirname,
+      "uploads",
+      repoName
+    );
+
+    const files = await readRepositoryFiles(repoPath);
+
+    res.json({
+      success: true,
+      totalFiles: files.length,
+      files,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to read repository",
     });
   }
 });
