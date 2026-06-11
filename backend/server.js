@@ -9,6 +9,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const ALLOWED_EXTENSIONS = [
+  ".js",
+  ".jsx",
+  ".ts",
+  ".tsx",
+  ".java",
+  ".py",
+  ".cpp",
+  ".c",
+  ".json",
+  ".md"
+];
+
 
 async function getAllFiles(dirPath) {
   let files = [];
@@ -21,9 +34,19 @@ async function getAllFiles(dirPath) {
     const stats = await fs.stat(fullPath);
 
     if (stats.isDirectory()) {
-      const nestedFiles = await getAllFiles(fullPath);
-      files = [...files, ...nestedFiles];
-    } else {
+
+  if (
+    item === ".git" ||
+    item === "node_modules" ||
+    item === "dist" ||
+    item === "build"
+  ) {
+    continue;
+  }
+
+  const nestedFiles = await getAllFiles(fullPath);
+  files = [...files, ...nestedFiles];
+} else {
       files.push(fullPath);
     }
   }
@@ -40,8 +63,16 @@ async function readRepositoryFiles(repoPath) {
 
   for (const file of files) {
     try {
-      const content = await fs.readFile(file, "utf-8");
+ const ext = path.extname(file);
+ console.log("Checking:", file);
+console.log("Extension:", path.extname(file));
 
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        continue;
+      }
+
+      const content = await fs.readFile(file, "utf-8");
+      
       fileContents.push({
         path: file,
         content,
@@ -52,6 +83,20 @@ async function readRepositoryFiles(repoPath) {
   }
 
   return fileContents;
+}
+
+
+
+function chunkText(text, chunkSize = 1000) {
+  const chunks = [];
+
+  for (let i = 0; i < text.length; i += chunkSize) {
+    chunks.push(
+      text.slice(i, i + chunkSize)
+    );
+  }
+
+  return chunks;
 }
 
 app.get("/", (req, res) => {
@@ -152,6 +197,49 @@ app.post("/read-repo", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to read repository",
+    });
+  }
+});
+
+
+app.post("/chunk-repo", async (req, res) => {
+  try {
+    const { repoName } = req.body;
+
+    const repoPath = path.join(
+      __dirname,
+      "uploads",
+      repoName
+    );
+
+    const files = await readRepositoryFiles(repoPath);
+
+    const chunks = [];
+
+    for (const file of files) {
+      const fileChunks = chunkText(file.content);
+
+      fileChunks.forEach((chunk, index) => {
+        chunks.push({
+          filePath: file.path,
+          chunkNumber: index + 1,
+          content: chunk,
+        });
+      });
+    }
+
+    res.json({
+      success: true,
+      totalChunks: chunks.length,
+      chunks,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to chunk repository"
     });
   }
 });
