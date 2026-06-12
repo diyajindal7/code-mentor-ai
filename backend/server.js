@@ -7,6 +7,7 @@ const fs = require("fs-extra");
 const app = express();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const connectDB = require("./config/db");
+const Chunk = require("./models/Chunk");
 
 app.use(cors());
 app.use(express.json());
@@ -28,10 +29,7 @@ const genAI = new GoogleGenerativeAI(
   process.env.GEMINI_API_KEY
 );
 
-const Chunk = require("./models/Chunk");
-const {
-  generateEmbedding,
-} = require("./services/embeddingService");
+
 
 async function getAllFiles(dirPath) {
   let files = [];
@@ -289,7 +287,7 @@ app.get("/test-gemini", async (req, res) => {
 connectDB();
 
 
-app.post("/embed-repo", async (req, res) => {
+app.post("/store-repo", async (req, res) => {
   try {
 
     const { repoName } = req.body;
@@ -318,17 +316,11 @@ app.post("/embed-repo", async (req, res) => {
         i++
       ) {
 
-        const embedding =
-          await generateEmbedding(
-            fileChunks[i]
-          );
-
         await Chunk.create({
           repoName,
           filePath: file.path,
           chunkNumber: i + 1,
-          content: fileChunks[i],
-          embedding,
+          content: fileChunks[i]
         });
 
         savedChunks++;
@@ -337,7 +329,7 @@ app.post("/embed-repo", async (req, res) => {
 
     res.json({
       success: true,
-      savedChunks,
+      savedChunks
     });
 
   } catch (error) {
@@ -346,11 +338,12 @@ app.post("/embed-repo", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error.message,
+      error: error.message
     });
 
   }
 });
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
