@@ -351,13 +351,48 @@ app.post("/ask-repo", async (req, res) => {
 
     const { repoName, question } = req.body;
 
-    const chunks = await Chunk.find({
-      repoName
-    }).limit(10);
+const keywords = question
+  .toLowerCase()
+  .split(" ")
+  .filter(word => word.length > 2);
 
-    const context = chunks
+const allChunks = await Chunk.find({
+  repoName
+});
+
+const rankedChunks = allChunks
+  .map(chunk => {
+
+    const content =
+      chunk.content.toLowerCase();
+
+    let score = 0;
+
+    keywords.forEach(keyword => {
+      if (content.includes(keyword)) {
+        score++;
+      }
+    });
+
+    return {
+      ...chunk.toObject(),
+      score
+    };
+
+  })
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 5);
+
+
+   const context = rankedChunks
       .map(chunk => chunk.content)
       .join("\n\n");
+    
+    console.log(
+  rankedChunks.map(c => ({
+    score: c.score
+  }))
+);
 
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash"
@@ -394,6 +429,59 @@ Answer based only on the repository context above.
   }
 });
 
+
+
+app.post("/repo-summary", async (req, res) => {
+  try {
+
+    const { repoName } = req.body;
+
+    const chunks = await Chunk.find({
+      repoName
+    }).limit(20);
+
+    const context = chunks
+      .map(chunk => chunk.content)
+      .join("\n\n");
+
+    const model =
+      genAI.getGenerativeModel({
+        model: "gemini-2.5-flash"
+      });
+
+    const prompt = `
+Analyze this repository and provide:
+
+1. Project Overview
+2. Tech Stack
+3. Architecture
+4. Main Features
+5. Folder Structure Insights
+
+Repository Content:
+
+${context}
+`;
+
+    const result =
+      await model.generateContent(prompt);
+
+    res.json({
+      success: true,
+      summary: result.response.text()
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

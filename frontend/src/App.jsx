@@ -8,6 +8,7 @@ function App() {
   const [answer, setAnswer] = useState("");
 
   const [loading, setLoading] = useState(false);
+const [summary, setSummary] = useState("");
 
   const analyzeRepo = async () => {
     try {
@@ -50,6 +51,43 @@ function App() {
       setLoading(false);
     }
   };
+
+
+
+  const generateSummary = async () => {
+
+  try {
+
+    setLoading(true);
+
+    const res = await fetch(
+      "http://localhost:5000/repo-summary",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          repoName,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    setSummary(data.summary);
+
+  } catch (error) {
+
+    console.error(error);
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
 
   const askQuestion = async () => {
     try {
@@ -110,6 +148,18 @@ function App() {
         Analyze Repository
       </button>
 
+
+
+<button
+  onClick={generateSummary}
+  style={{
+    marginLeft: "10px"
+  }}
+>
+  Generate Summary
+</button>
+
+
       <hr />
 
       <input
@@ -151,6 +201,27 @@ function App() {
           <p>{answer}</p>
         </div>
       )}
+
+
+      {summary && (
+  <div
+    style={{
+      marginTop: "20px",
+      padding: "15px",
+      border: "1px solid #ddd",
+    }}
+  >
+    <h3>Repository Summary</h3>
+
+    <pre
+      style={{
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {summary}
+    </pre>
+  </div>
+)}
     </div>
   );
 }
