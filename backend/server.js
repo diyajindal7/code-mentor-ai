@@ -5,6 +5,8 @@ const path = require("path");
 const simpleGit = require("simple-git");
 const fs = require("fs-extra");
 const app = express();
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
 
 app.use(cors());
 app.use(express.json());
@@ -22,6 +24,9 @@ const ALLOWED_EXTENSIONS = [
   ".md"
 ];
 
+const genAI = new GoogleGenerativeAI(
+  process.env.GEMINI_API_KEY
+);
 
 async function getAllFiles(dirPath) {
   let files = [];
@@ -245,6 +250,36 @@ app.post("/chunk-repo", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+
+
+app.get("/test-gemini", async (req, res) => {
+  try {
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash"
+    });
+
+    const result = await model.generateContent(
+      "Say hello from CodeMentor AI"
+    );
+
+    res.json({
+      success: true,
+      response: result.response.text()
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
