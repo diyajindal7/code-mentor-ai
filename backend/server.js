@@ -344,6 +344,57 @@ app.post("/store-repo", async (req, res) => {
   }
 });
 
+
+
+app.post("/ask-repo", async (req, res) => {
+  try {
+
+    const { repoName, question } = req.body;
+
+    const chunks = await Chunk.find({
+      repoName
+    }).limit(10);
+
+    const context = chunks
+      .map(chunk => chunk.content)
+      .join("\n\n");
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash"
+    });
+
+    const prompt = `
+Repository Context:
+
+${context}
+
+Question:
+${question}
+
+Answer based only on the repository context above.
+`;
+
+    const result =
+      await model.generateContent(prompt);
+
+    res.json({
+      success: true,
+      answer: result.response.text()
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
