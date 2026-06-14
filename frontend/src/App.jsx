@@ -6,9 +6,17 @@ function App() {
 
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
-
+const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(false);
 const [summary, setSummary] = useState("");
+  useState("");
+const [readme, setReadme] = useState("");
+const [architecture, setArchitecture] =
+  useState("");
+const [techStack, setTechStack] = useState("");
+const [bugs, setBugs] = useState("");
+const [securityReport, setSecurityReport] =
+  useState("");
 
   const analyzeRepo = async () => {
     try {
@@ -87,6 +95,7 @@ const [summary, setSummary] = useState("");
     setLoading(false);
 
   }
+  console.log("Repo Name:", repoName);
 };
 
   const askQuestion = async () => {
@@ -109,13 +118,163 @@ const [summary, setSummary] = useState("");
 
       const data = await res.json();
 
-      setAnswer(data.answer);
+setAnswer(data.answer);
+setSources(data.sources || []);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
+
+
+  const generateArchitecture =
+  async () => {
+
+    const res = await fetch(
+      "http://localhost:5000/repo-architecture",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          repoName,
+        }),
+      }
+    );
+
+    const data =
+      await res.json();
+
+    setArchitecture(
+      data.architecture
+    );
+};
+
+
+
+
+
+const detectTechStack =
+  async () => {
+
+    try {
+
+      const res = await fetch(
+        "http://localhost:5000/tech-stack",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            repoName,
+          }),
+        }
+      );
+
+      const data =
+        await res.json();
+
+      setTechStack(
+        data.techStack
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+};
+
+const findBugs = async () => {
+
+  const res = await fetch(
+    "http://localhost:5000/find-bugs",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        repoName,
+      }),
+    }
+  );
+
+  const data = await res.json();
+
+  setBugs(data.bugs);
+};
+
+
+const securityScan = async () => {
+
+  try {
+
+    const res = await fetch(
+      "http://localhost:5000/security-scan",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          repoName,
+        }),
+      }
+    );
+
+    const data =
+      await res.json();
+
+    setSecurityReport(
+      data.report
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+};
+
+const generateReadme = async () => {
+
+  try {
+
+    const res = await fetch(
+      "http://localhost:5000/generate-readme",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          repoName,
+        }),
+      }
+    );
+
+    const data =
+      await res.json();
+
+    setReadme(
+      data.readme
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+};
 
   return (
     <div
@@ -199,6 +358,15 @@ const [summary, setSummary] = useState("");
         >
           <h3>AI Answer</h3>
           <p>{answer}</p>
+
+          <h3>Sources</h3>
+
+<ul>
+  {sources.map((source, index) => (
+    <li key={index}>{source}</li>
+  ))}
+</ul>
+
         </div>
       )}
 
@@ -222,8 +390,162 @@ const [summary, setSummary] = useState("");
     </pre>
   </div>
 )}
+
+<button
+  onClick={generateArchitecture}
+  style={{
+    marginLeft: "10px"
+  }}
+>
+  Generate Architecture
+</button>
+
+
+
+
+{architecture && (
+  <div
+    style={{
+      marginTop: "20px",
+      padding: "15px",
+      border: "1px solid #ddd",
+    }}
+  >
+    <h3>Architecture</h3>
+
+    <pre
+      style={{
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {architecture}
+    </pre>
+  </div>
+)}
+<button
+  onClick={detectTechStack}
+  style={{
+    marginLeft: "10px"
+  }}
+>
+  Detect Tech Stack
+</button>
+
+{techStack && (
+  <div
+    style={{
+      marginTop: "20px",
+      padding: "15px",
+      border: "1px solid #ddd",
+    }}
+  >
+    <h3>Tech Stack</h3>
+
+    <pre
+      style={{
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {techStack}
+    </pre>
+  </div>
+)}
+
+
+<button
+  onClick={findBugs}
+  style={{
+    marginLeft: "10px"
+  }}
+>
+  Find Bugs
+</button>
+
+{bugs && (
+  <div
+    style={{
+      marginTop: "20px",
+      padding: "15px",
+      border: "1px solid #ddd",
+    }}
+  >
+    <h3>Bug Analysis</h3>
+
+    <pre
+      style={{
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {bugs}
+    </pre>
+  </div>
+)}
+
+
+
+<button
+  onClick={securityScan}
+  style={{
+    marginLeft: "10px"
+  }}
+>
+  Security Scan
+</button>
+
+{securityReport && (
+  <div
+    style={{
+      marginTop: "20px",
+      padding: "15px",
+      border: "1px solid #ddd",
+    }}
+  >
+    <h3>Security Report</h3>
+
+    <pre
+      style={{
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {securityReport}
+    </pre>
+  </div>
+)}
+
+<button
+  onClick={generateReadme}
+  style={{
+    marginLeft: "10px"
+  }}
+>
+  Generate README
+</button>
+
+{readme && (
+  <div
+    style={{
+      marginTop: "20px",
+      padding: "15px",
+      border: "1px solid #ddd",
+    }}
+  >
+    <h3>Generated README</h3>
+
+    <pre
+      style={{
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {readme}
+    </pre>
+  </div>
+)}
+
     </div>
   );
 }
+
+
+
 
 export default App;
