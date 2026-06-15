@@ -825,53 +825,91 @@ app.post("/tech-stack", async (req, res) => {
   .map(chunk => chunk.content)
   .join("\n\n");
 
-    const model =
-      genAI.getGenerativeModel({
-        model: "gemini-2.5-flash"
-      });
+    const frontend = [];
+const backend = [];
+const database = [];
+const auth = [];
+const deployment = [];
 
-   const prompt = `
-Analyze the repository.
-Return ONLY the top 5 findings.
-Maximum 200 words.
-Use bullet points.
-Return ONLY:
+techChunks.forEach(chunk => {
 
-Frontend:
-Backend:
-Database:
-Authentication:
-Deployment:
-Analyze ONLY the provided repository files.
+  const content =
+    chunk.content.toLowerCase();
 
-Return ONLY technologies that are directly visible in:
-- package.json
-- Dockerfile
-- docker-compose.yml
-- nginx configs
-- AWS configs
-- source code imports
+  if (
+    content.includes("react")
+  ) {
+    frontend.push("React");
+  }
 
-Do not guess.
+  if (
+    content.includes("vite")
+  ) {
+    frontend.push("Vite");
+  }
 
-If a technology is not explicitly found,
-write "Not Found".
+  if (
+    content.includes("express")
+  ) {
+    backend.push("Express");
+  }
 
-Do NOT list every dependency from package.json.
+  if (
+    content.includes("node")
+  ) {
+    backend.push("Node.js");
+  }
 
-Only mention major technologies actually used by the project.
+  if (
+    content.includes("mongoose") ||
+    content.includes("mongodb")
+  ) {
+    database.push("MongoDB");
+  }
 
-Keep the answer under 100 words.
-`;
+  if (
+    content.includes("jwt")
+  ) {
+    auth.push("JWT");
+  }
 
-    const result =
-      await model.generateContent(prompt);
+  if (
+    content.includes("bcrypt")
+  ) {
+    auth.push("Bcrypt");
+  }
 
-    res.json({
-      success: true,
-      techStack:
-        result.response.text()
-    });
+  if (
+    content.includes("aws")
+  ) {
+    deployment.push("AWS");
+  }
+
+  if (
+    content.includes("docker")
+  ) {
+    deployment.push("Docker");
+  }
+
+});
+
+const unique = arr =>
+  [...new Set(arr)];
+
+res.json({
+  success: true,
+  techStack: `
+Frontend: ${unique(frontend).join(", ") || "Not Found"}
+
+Backend: ${unique(backend).join(", ") || "Not Found"}
+
+Database: ${unique(database).join(", ") || "Not Found"}
+
+Authentication: ${unique(auth).join(", ") || "Not Found"}
+
+Deployment: ${unique(deployment).join(", ") || "Not Found"}
+`
+});
 
   } catch (error) {
 
