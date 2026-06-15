@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+const API_URL = import.meta.env.VITE_API_URL;
 function App() {
   const [repoUrl, setRepoUrl] = useState("");
   const [repoName, setRepoName] = useState("");
@@ -23,7 +23,7 @@ const [securityReport, setSecurityReport] =
       setLoading(true);
 
       const cloneRes = await fetch(
-        "http://localhost:5000/clone-repo",
+  `${API_URL}/clone-repo`,
         {
           method: "POST",
           headers: {
@@ -38,10 +38,9 @@ const [securityReport, setSecurityReport] =
       const cloneData = await cloneRes.json();
 
       setRepoName(cloneData.repoName);
-
-      await fetch(
-        "http://localhost:5000/store-repo",
-        {
+await fetch(
+  `${API_URL}/store-repo`,
+  {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -69,8 +68,8 @@ const [securityReport, setSecurityReport] =
     setLoading(true);
 
     const res = await fetch(
-      "http://localhost:5000/repo-summary",
-      {
+ `${API_URL}/repo-summary`,
+     {
         method: "POST",
         headers: {
           "Content-Type":
@@ -103,7 +102,7 @@ const [securityReport, setSecurityReport] =
       setLoading(true);
 
       const res = await fetch(
-        "http://localhost:5000/ask-repo",
+  `${API_URL}/ask-repo`,
         {
           method: "POST",
           headers: {
@@ -132,7 +131,7 @@ setSources(data.sources || []);
   async () => {
 
     const res = await fetch(
-      "http://localhost:5000/repo-architecture",
+ `${API_URL}/repo-architecture`,
       {
         method: "POST",
         headers: {
@@ -163,7 +162,7 @@ const detectTechStack =
     try {
 
       const res = await fetch(
-        "http://localhost:5000/tech-stack",
+  `${API_URL}/tech-stack`,
         {
           method: "POST",
           headers: {
@@ -191,14 +190,12 @@ const detectTechStack =
 };
 
 const findBugs = async () => {
-
   const res = await fetch(
-    "http://localhost:5000/find-bugs",
+    `${API_URL}/find-bugs`,
     {
       method: "POST",
       headers: {
-        "Content-Type":
-          "application/json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         repoName,
@@ -212,12 +209,14 @@ const findBugs = async () => {
 };
 
 
+
+
 const securityScan = async () => {
 
   try {
 
     const res = await fetch(
-      "http://localhost:5000/security-scan",
+`${API_URL}/security-scan`,
       {
         method: "POST",
         headers: {
@@ -249,7 +248,7 @@ const generateReadme = async () => {
   try {
 
     const res = await fetch(
-      "http://localhost:5000/generate-readme",
+`${API_URL}/generate-readme`,
       {
         method: "POST",
         headers: {
@@ -544,7 +543,6 @@ const generateReadme = async () => {
     </div>
   );
 }
-
 
 
 
