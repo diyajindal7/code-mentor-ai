@@ -282,7 +282,7 @@ app.get("/test-gemini", async (req, res) => {
   try {
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash"
+      model: "gemini-2.5-flash-lite"
     });
 
     const result = await model.generateContent(
@@ -671,7 +671,9 @@ const chunks = allChunks
 
     const prompt = `
 You are analyzing a software repository.
-
+Return ONLY the top 5 findings.
+Maximum 200 words.
+Use bullet points.
 Based ONLY on the provided repository code and files:
 
 1. Project Overview
@@ -704,12 +706,23 @@ ${context}
 
     console.error(error);
 
+    if (error.status === 429) {
+
+      return res.status(429).json({
+        success: false,
+        message:
+          "Gemini quota exceeded. Please try again later."
+      });
+
+    }
+
     res.status(500).json({
       success: false,
-      error: error.message
+      message: error.message
     });
 
   }
+
 });
 
 
@@ -733,7 +746,9 @@ app.post("/repo-architecture", async (req, res) => {
 
     const prompt = `
 Analyze this repository.
-
+Return ONLY the top 5 findings.
+Maximum 200 words.
+Use bullet points.
 Return ONLY:
 
 1. Project Type
@@ -765,12 +780,25 @@ ${context}
 
   } catch (error) {
 
+    console.error(error);
+
+    if (error.status === 429) {
+
+      return res.status(429).json({
+        success: false,
+        message:
+          "Gemini quota exceeded. Please try again later."
+      });
+
+    }
+
     res.status(500).json({
       success: false,
-      error: error.message
+      message: error.message
     });
 
   }
+
 });
 
 
@@ -803,7 +831,9 @@ app.post("/tech-stack", async (req, res) => {
 
    const prompt = `
 Analyze the repository.
-
+Return ONLY the top 5 findings.
+Maximum 200 words.
+Use bullet points.
 Return ONLY:
 
 Frontend:
@@ -844,12 +874,25 @@ Keep the answer under 100 words.
 
   } catch (error) {
 
+    console.error(error);
+
+    if (error.status === 429) {
+
+      return res.status(429).json({
+        success: false,
+        message:
+          "Gemini quota exceeded. Please try again later."
+      });
+
+    }
+
     res.status(500).json({
       success: false,
-      error: error.message
+      message: error.message
     });
 
   }
+
 });
 
 
@@ -873,14 +916,14 @@ app.post("/find-bugs", async (req, res) => {
 
     const prompt = `
 Analyze ONLY the provided code.
+Find only the top 5 most likely bugs.
 
-For every bug found:
+Format:
+- File
+- Bug
+- Fix
 
-1. File name
-2. Line or function involved
-3. Why it is a bug
-4. Suggested fix
-
+Maximum 200 words.
 Do not provide generic advice.
 Only report issues supported by the code context.
 
@@ -936,26 +979,15 @@ app.post("/security-scan", async (req, res) => {
       });
 
     const prompt = `
-Analyze ONLY the provided repository code.
+Analyze this repository.
 
-Find:
+Return:
+1. Vulnerability
+2. Severity
+3. Fix
 
-1. Hardcoded secrets
-2. Missing authentication
-3. Missing authorization
-4. JWT security issues
-5. SQL Injection risks
-6. XSS risks
-7. Open CORS configurations
-
-For each issue provide:
-
-- File name
-- Vulnerability
-- Severity
-- Suggested Fix
-
-Only report issues visible in code.
+Maximum 5 issues.
+Maximum 250 words.
 
 Repository:
 
@@ -974,12 +1006,23 @@ ${context}
 
     console.error(error);
 
+    if (error.status === 429) {
+
+      return res.status(429).json({
+        success: false,
+        message:
+          "Gemini quota exceeded. Please try again later."
+      });
+
+    }
+
     res.status(500).json({
       success: false,
-      error: error.message
+      message: error.message
     });
 
   }
+
 });
 
 app.post("/generate-readme", async (req, res) => {
@@ -1002,7 +1045,9 @@ app.post("/generate-readme", async (req, res) => {
 
     const prompt = `
 Analyze this repository and generate a professional README.
-
+Return ONLY the top 5 findings.
+Maximum 200 words.
+Use bullet points.
 Include:
 
 # Project Name
@@ -1035,16 +1080,27 @@ ${context}
         result.response.text()
     });
 
-  } catch (error) {
+  }catch (error) {
 
     console.error(error);
 
+    if (error.status === 429) {
+
+      return res.status(429).json({
+        success: false,
+        message:
+          "Gemini quota exceeded. Please try again later."
+      });
+
+    }
+
     res.status(500).json({
       success: false,
-      error: error.message
+      message: error.message
     });
 
   }
+
 });
 
 app.listen(PORT, () => {
