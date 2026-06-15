@@ -160,6 +160,7 @@ const detectTechStack =
   async () => {
 
     try {
+      setLoading(true);
 
       const res = await fetch(
   `${API_URL}/tech-stack`,
@@ -186,7 +187,9 @@ const detectTechStack =
 
       console.error(error);
 
-    }
+    }finally {
+    setLoading(false);
+  }
 };
 
 const findBugs = async () => {
@@ -214,7 +217,7 @@ const findBugs = async () => {
 const securityScan = async () => {
 
   try {
-
+    setLoading(true);
     const res = await fetch(
 `${API_URL}/security-scan`,
       {
@@ -240,13 +243,15 @@ const securityScan = async () => {
 
     console.error(error);
 
+  }finally {
+    setLoading(false);
   }
 };
 
 const generateReadme = async () => {
 
   try {
-
+    setLoading(true);
     const res = await fetch(
 `${API_URL}/generate-readme`,
       {
@@ -272,6 +277,8 @@ const generateReadme = async () => {
 
     console.error(error);
 
+  }finally {
+    setLoading(false);
   }
 };
 

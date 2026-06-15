@@ -638,7 +638,7 @@ If information is not present in the context, reply:
 
 app.post("/repo-summary", async (req, res) => {
   try {
- setLoading(true);
+ 
     const { repoName } = req.body;
 
    const allChunks = await Chunk.find({
@@ -721,8 +721,6 @@ ${context}
       message: error.message
     });
 
-  }finally {
-    setLoading(false);
   }
 
 });
@@ -730,7 +728,7 @@ ${context}
 
 app.post("/repo-architecture", async (req, res) => {
   try {
-    setLoading(true);
+   
 
     const { repoName } = req.body;
 
@@ -800,8 +798,6 @@ ${context}
       message: error.message
     });
 
-  }finally {
-    setLoading(false);
   }
 
 });
@@ -809,7 +805,7 @@ ${context}
 
 app.post("/tech-stack", async (req, res) => {
   try {
-setLoading(true);
+
     const { repoName } = req.body;
 
    const techChunks = await Chunk.find({
@@ -896,8 +892,6 @@ Keep the answer under 100 words.
       message: error.message
     });
 
-  }finally {
-    setLoading(false);
   }
 
 });
@@ -905,7 +899,7 @@ Keep the answer under 100 words.
 
 app.post("/find-bugs", async (req, res) => {
   try {
-  setLoading(true);
+  
     const { repoName } = req.body;
 
     const chunks = await Chunk.find({
@@ -964,15 +958,12 @@ ${context}
     error: error.message
   });
 }
-finally {
-    setLoading(false);
-  }
 });
 
 
 app.post("/security-scan", async (req, res) => {
   try {
-  setLoading(true);
+  
     const { repoName } = req.body;
 
     const chunks = await Chunk.find({
@@ -1032,15 +1023,13 @@ ${context}
     });
 
   }
-  finally {
-    setLoading(false);
-  }
+
 
 });
 
 app.post("/generate-readme", async (req, res) => {
   try {
-    setLoading(true);
+   
 
     const { repoName } = req.body;
 
@@ -1113,10 +1102,7 @@ ${context}
       message: error.message
     });
 
-  }finally {
-    setLoading(false);
   }
-
 });
 
 app.listen(PORT, () => {
