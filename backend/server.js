@@ -944,13 +944,11 @@ app.post("/find-bugs", async (req, res) => {
       repoName
     }).limit(100);
 
-    const context = chunks
-      .map(chunk => chunk.content)
-      .join("\n\n");
+   
 
       let report = "";
 
-bugChunks.forEach(chunk => {
+chunks.forEach(chunk => {
 
   const content =
     chunk.content.toLowerCase();
