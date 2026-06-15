@@ -948,36 +948,53 @@ app.post("/find-bugs", async (req, res) => {
       .map(chunk => chunk.content)
       .join("\n\n");
 
-    const model =
-      genAI.getGenerativeModel({
-        model: "gemini-2.5-flash"
-      });
+      let report = "";
 
-    const prompt = `
-Analyze ONLY the provided code.
-Find only the top 5 most likely bugs.
+bugChunks.forEach(chunk => {
 
-Format:
-- File
-- Bug
-- Fix
+  const content =
+    chunk.content.toLowerCase();
 
-Maximum 200 words.
-Do not provide generic advice.
-Only report issues supported by the code context.
+  if (
+    content.includes("console.log(")
+  ) {
+    report +=
+      "• Debug console.log statements found\n";
+  }
 
-Repository:
+  if (
+    content.includes("todo")
+  ) {
+    report +=
+      "• TODO comments found\n";
+  }
 
-${context}
-`;
+  if (
+    content.includes("process.env")
+  ) {
+    report +=
+      "• Uses environment variables\n";
+  }
 
-    const result =
-      await model.generateContent(prompt);
+  if (
+    content.includes("catch")
+  ) {
+    report +=
+      "• Error handling present\n";
+  }
 
-    res.json({
-      success: true,
-      bugs: result.response.text()
-    });
+});
+
+if (!report) {
+  report =
+    "No obvious issues detected.";
+}
+
+res.json({
+  success: true,
+  bugs: report
+});
+ 
 
   } catch (error) {
 
@@ -1018,15 +1035,14 @@ app.post("/security-scan", async (req, res) => {
       });
 
     const prompt = `
-Analyze this repository.
+Return ONLY top 5 findings.
+Maximum 150 words.
+Each finding:
+- Vulnerability
+- Severity
+- Fix
 
-Return:
-1. Vulnerability
-2. Severity
-3. Fix
-
-Maximum 5 issues.
-Maximum 250 words.
+Keep answer concise.
 
 Repository:
 
