@@ -10,3 +10,4 @@ uploads/
 backend/uploads/
 dist/
 frontend/dist/
+.vercel
